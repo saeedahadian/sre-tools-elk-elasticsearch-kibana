@@ -3,3 +3,4 @@ certs
 instances.yml
 *.sh
 passwords.txt
+unicast_hosts.txt

@@ -16,7 +16,7 @@ services:
     environment:
       - node.name=es01
       - cluster.name=elk-docker-cluster
-      - discovery.seed_hosts=es02,es03
+      - discovery.seed_providers=file
       - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -31,6 +31,7 @@ services:
     volumes:
       - es01-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
+      - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
     ports:
       - ${ELASTICSEARCH_OUTBOUND_PORT}:9200
 
@@ -40,7 +41,7 @@ services:
     environment:
       - node.name=es02
       - cluster.name=elk-docker-cluster
-      - discovery.seed_hosts=es01,es03
+      - discovery.seed_providers=file
       - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -55,6 +56,7 @@ services:
     volumes:
       - es02-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
+      - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
 
   es03:
     <<: *es-common
@@ -62,7 +64,7 @@ services:
     environment:
       - node.name=es03
       - cluster.name=elk-docker-cluster
-      - discovery.seed_hosts=es01,es02
+      - discovery.seed_providers=file
       - cluster.initial_master_nodes=es01,es02,es03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -77,6 +79,7 @@ services:
     volumes:
       - es03-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
+      - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
 
   kib:
     image: kibana/kibana:${VERSION}
