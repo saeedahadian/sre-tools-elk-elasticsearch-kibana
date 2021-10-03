@@ -1,0 +1,118 @@
+version: '3.8'
+
+x-es-common: &es-common
+  image: elasticsearch/elasticsearch:${VERSION}
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+  networks:
+    - elastic-net
+
+services:
+  es01:
+    <<: *es-common
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=elk-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=$ES_PATH_CERTS/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$ES_PATH_CERTS/es01/es01.crt
+      - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es01/es01.key
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+    volumes:
+      - es01-data:${ELASTICSEARCH_DATA_DIR}
+      - certs:$ES_PATH_CERTS
+    ports:
+      - ${ELASTICSEARCH_OUTBOUND_PORT}:9200
+
+  es02:
+    <<: *es-common
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=elk-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=$ES_PATH_CERTS/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$ES_PATH_CERTS/es02/es02.crt
+      - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es02/es02.key
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+    volumes:
+      - es02-data:${ELASTICSEARCH_DATA_DIR}
+      - certs:$ES_PATH_CERTS
+
+  es03:
+    <<: *es-common
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=elk-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=$ES_PATH_CERTS/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$ES_PATH_CERTS/es03/es03.crt
+      - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es03/es03.key
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+    volumes:
+      - es03-data:${ELASTICSEARCH_DATA_DIR}
+      - certs:$ES_PATH_CERTS
+
+  kib:
+    image: kibana/kibana:${VERSION}
+    container_name: kib
+    ports:
+      - ${KIBANA_OUTBOUND_PORT}:5601
+    environment:
+      SERVERNAME: localhost
+      ELASTICSEARCH_URL: https://es01:9200
+      ELASTICSEARCH_HOSTS: '["https://es01:9200","https://es02:9200","https://es03:9200"]'
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: bTrL1FPGK1XOOlTStgMd
+      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $ES_PATH_CERTS/kibana/elasticsearch-ca.pem
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_KEY: $ES_PATH_CERTS/kib/kib.key
+      SERVER_SSL_CERTIFICATE: $ES_PATH_CERTS/kib/kib.crt
+    depends_on:
+      - es01
+      - es02
+      - es03
+    volumes:
+      - certs:$ES_PATH_CERTS
+    networks:
+      - elastic-net
+
+volumes:
+  es01-data:
+    name: es01-data
+  es02-data:
+    name: es02-data
+  es03-data:
+    name: es03-data
+  certs:
+    external: true
+    name: elastic-certs
+
+networks:
+  elastic-net:
+    name: elastic-net
