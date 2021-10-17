@@ -2,6 +2,7 @@ version: '3.8'
 
 x-es-common: &es-common
   image: elasticsearch/elasticsearch:${VERSION}
+  restart: unless-stopped
   ulimits:
     memlock:
       soft: -1
@@ -84,6 +85,7 @@ services:
   kib:
     image: kibana/kibana:${VERSION}
     container_name: kib
+    restart: unless-stopped
     ports:
       - ${KIBANA_OUTBOUND_PORT}:5601
     environment:
@@ -91,17 +93,19 @@ services:
       ELASTICSEARCH_URL: https://es01:9200
       ELASTICSEARCH_HOSTS: '["https://es01:9200","https://es02:9200","https://es03:9200"]'
       ELASTICSEARCH_USERNAME: kibana_system
-      ELASTICSEARCH_PASSWORD: bTrL1FPGK1XOOlTStgMd
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $ES_PATH_CERTS/kibana/elasticsearch-ca.pem
       SERVER_SSL_ENABLED: "true"
       SERVER_SSL_KEY: $ES_PATH_CERTS/kib/kib.key
       SERVER_SSL_CERTIFICATE: $ES_PATH_CERTS/kib/kib.crt
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: ${KIBANA_ENCRYPTION_KEY}
     depends_on:
       - es01
       - es02
       - es03
     volumes:
       - certs:$ES_PATH_CERTS
+      #- ./config/kibana.yml:/usr/share/kibana/config/kibana.yml
     networks:
       - elastic-net
 
@@ -118,4 +122,5 @@ volumes:
 
 networks:
   elastic-net:
+    external: true
     name: elastic-net
