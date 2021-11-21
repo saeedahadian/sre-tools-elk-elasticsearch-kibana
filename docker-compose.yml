@@ -34,6 +34,7 @@ services:
       - es01-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
       - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
+      - ./plugins:/usr/share/elasticsearch/plugins
     ports:
       - ${ELASTICSEARCH_OUTBOUND_PORT}:9200
 
@@ -60,6 +61,7 @@ services:
       - es02-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
       - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
+      - ./plugins:/usr/share/elasticsearch/plugins
 
   es03:
     <<: *es-common
@@ -84,6 +86,7 @@ services:
       - es03-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
       - ./unicast_hosts.txt:$ES_PATH_CONFIG/unicast_hosts.txt
+      - ./plugins:/usr/share/elasticsearch/plugins
 
   kib:
     image: kibana/kibana:${VERSION}
