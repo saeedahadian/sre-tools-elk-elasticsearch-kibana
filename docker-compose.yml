@@ -29,6 +29,7 @@ services:
       - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es01/es01.key
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+      - ingest.geoip.downloader.enabled=false
     volumes:
       - es01-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
@@ -54,6 +55,7 @@ services:
       - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es02/es02.key
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+      - ingest.geoip.downloader.enabled=false
     volumes:
       - es02-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
@@ -77,6 +79,7 @@ services:
       - xpack.security.transport.ssl.key=$ES_PATH_CERTS/es03/es03.key
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.keystore.path=$ES_PATH_CERTS/elasticsearch/http.p12
+      - ingest.geoip.downloader.enabled=false
     volumes:
       - es03-data:${ELASTICSEARCH_DATA_DIR}
       - certs:$ES_PATH_CERTS
